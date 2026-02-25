@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum FormStatus {
+  draft
+  published
+  archived
+}
+
+enum QuestionType {
+  short_answer
+  multiple_choice
+  multiple_choice_dropdown
+  page_break
+  text_block
+  rating
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  forms        Form[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Form {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  status      FormStatus   @default(draft)
+  ownerId     String
+  owner       User         @relation(fields: [ownerId], references: [id])
+  questions   Question[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Question {
+  id                String       @id @default(cuid())
+  formId            String
+  form              Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
+  type              QuestionType
+  title             String
+  required          Boolean      @default(false)
+  order             Int
+  options           String[]     @default([])
+  allowMultiple     Boolean      @default(false)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([formId])
+}

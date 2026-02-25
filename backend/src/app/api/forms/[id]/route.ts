@@ -1,0 +1,141 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { corsHeaders } from "@/lib/cors";
+import { getAuthUserId } from "@/lib/request";
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const form = await prisma.form.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      status: true,
+      ownerId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!form) {
+    return NextResponse.json(
+      { message: "Form not found." },
+      { status: 404, headers: corsHeaders }
+    );
+  }
+
+  return NextResponse.json(form, { headers: corsHeaders });
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const userId = getAuthUserId(req);
+  if (!userId) {
+    return NextResponse.json(
+      { message: "Unauthorized." },
+      { status: 401, headers: corsHeaders }
+    );
+  }
+
+  try {
+    const existing = await prisma.form.findUnique({
+      where: { id },
+      select: { ownerId: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { message: "Form not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    if (existing.ownerId !== userId) {
+      return NextResponse.json(
+        { message: "Forbidden." },
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
+    const body = await req.json();
+    const title = typeof body?.title === "string" ? body.title.trim() : undefined;
+    const description =
+      typeof body?.description === "string" ? body.description.trim() : undefined;
+    const status =
+      body?.status === "draft" ||
+      body?.status === "published" ||
+      body?.status === "archived"
+        ? body.status
+        : undefined;
+
+    const form = await prisma.form.update({
+      where: { id },
+      data: {
+        ...(title !== undefined ? { title } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(status !== undefined ? { status } : {}),
+      },
+    });
+
+    return NextResponse.json(form, { headers: corsHeaders });
+  } catch {
+    return NextResponse.json(
+      { message: "Unexpected error." },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const userId = getAuthUserId(req);
+  if (!userId) {
+    return NextResponse.json(
+      { message: "Unauthorized." },
+      { status: 401, headers: corsHeaders }
+    );
+  }
+
+  try {
+    const existing = await prisma.form.findUnique({
+      where: { id },
+      select: { ownerId: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { message: "Form not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    if (existing.ownerId !== userId) {
+      return NextResponse.json(
+        { message: "Forbidden." },
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
+    await prisma.form.delete({ where: { id } });
+    return new NextResponse(null, { status: 204, headers: corsHeaders });
+  } catch {
+    return NextResponse.json(
+      { message: "Unexpected error." },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
