@@ -158,3 +158,73 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string; questionId: string }> },
+) {
+  const { id, questionId } = await params;
+  const userId = getAuthUserId(req);
+
+  if (!userId) {
+    return NextResponse.json(
+      { message: "Unauthorized." },
+      { status: 401, headers: corsHeaders },
+    );
+  }
+
+  try {
+    const existingQuestion = await prisma.question.findUnique({
+      where: { id: questionId },
+      select: { formId: true },
+    });
+
+    if (!existingQuestion) {
+      return NextResponse.json(
+        { message: "Question not found." },
+        { status: 404, headers: corsHeaders },
+      );
+    }
+
+    if (existingQuestion.formId !== id) {
+      return NextResponse.json(
+        { message: "Question does not belong to this form." },
+        { status: 400, headers: corsHeaders },
+      );
+    }
+
+    const form = await prisma.form.findUnique({
+      where: { id },
+      select: { ownerId: true },
+    });
+
+    if (!form) {
+      return NextResponse.json(
+        { message: "Form not found." },
+        { status: 404, headers: corsHeaders },
+      );
+    }
+
+    if (form.ownerId !== userId) {
+      return NextResponse.json(
+        { message: "Forbidden." },
+        { status: 403, headers: corsHeaders },
+      );
+    }
+
+    await prisma.question.delete({
+      where: { id: questionId },
+    });
+
+    return NextResponse.json(
+      { message: "Question deleted." },
+      { status: 200, headers: corsHeaders },
+    );
+  } catch (error) {
+    console.error("Delete question error:", error);
+    return NextResponse.json(
+      { message: "Unexpected error." },
+      { status: 500, headers: corsHeaders },
+    );
+  }
+}

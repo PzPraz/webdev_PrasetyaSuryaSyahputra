@@ -19,6 +19,8 @@ import { CSS } from "@dnd-kit/utilities";
 import Button from "../components/Button.jsx";
 import Input from "../components/Input.jsx";
 import AddQuestion from "../components/AddQuestion.jsx";
+import Snackbar from "../components/Snackbar.jsx";
+import Modal from "../components/Modal.jsx";
 import {
   deleteForm,
   getFormById,
@@ -241,7 +243,9 @@ export default function FormDetail() {
   const [addType, setAddType] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [status, setStatus] = useState({ type: "", message: "" });
+  const [formError, setFormError] = useState("");
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", variant: "default", undoData: null });
+  const [deleteModal, setDeleteModal] = useState(false);
   const [draft, setDraft] = useState({
     title: "",
     description: "",
@@ -304,10 +308,10 @@ export default function FormDetail() {
 
   const handleSave = async (event) => {
     event.preventDefault();
-    setStatus({ type: "", message: "" });
+    setFormError("");
 
     if (!draft.title.trim()) {
-      setStatus({ type: "error", message: "Title wajib diisi." });
+      setFormError("Title wajib diisi.");
       return;
     }
 
@@ -320,24 +324,22 @@ export default function FormDetail() {
       });
       setForm(updated);
       setEditing(false);
-      setStatus({ type: "success", message: "Form berhasil diperbarui." });
+      setSnackbar({ open: true, message: "Form berhasil diperbarui.", variant: "success", undoData: null });
     } catch (err) {
-      setStatus({ type: "error", message: err.message });
+      setFormError(err.message);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    const confirmed = window.confirm("Hapus form ini?");
-    if (!confirmed) return;
-
+    setDeleteModal(false);
     try {
       setSaving(true);
       await deleteForm(id);
       navigate("/forms");
     } catch (err) {
-      setStatus({ type: "error", message: err.message });
+      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
     } finally {
       setSaving(false);
     }
@@ -353,31 +355,58 @@ export default function FormDetail() {
       setQuestions((prev) => [...prev, newQuestion]);
       setShowAddQuestion(false);
       setAddType(null);
-      const label =
-        questionData.type === "page_break"
-          ? "Page break"
-          : questionData.type === "text_block"
-            ? "Blok teks"
-            : "Pertanyaan";
-      setStatus({ type: "success", message: `${label} berhasil ditambahkan.` });
     } catch (err) {
-      setStatus({ type: "error", message: err.message });
+      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeleteQuestion = async (questionId) => {
-    const confirmed = window.confirm("Hapus item ini?");
-    if (!confirmed) return;
+    const deletedQuestion = questions.find((q) => q.id === questionId);
+    if (!deletedQuestion) return;
 
+    // Optimistically remove from UI
+    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+
+    // Delete on server
     try {
       setSaving(true);
       await deleteQuestion(id, questionId);
-      setQuestions((prev) => prev.filter((q) => q.id !== questionId));
-      setStatus({ type: "success", message: "Item berhasil dihapus." });
+      setSnackbar({
+        open: true,
+        message: "Item berhasil dihapus.",
+        variant: "default",
+        undoData: deletedQuestion,
+      });
     } catch (err) {
-      setStatus({ type: "error", message: err.message });
+      // Restore on failure
+      setQuestions((prev) => [...prev, deletedQuestion].sort((a, b) => a.order - b.order));
+      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUndoDelete = async () => {
+    const q = snackbar.undoData;
+    if (!q) return;
+    try {
+      setSaving(true);
+      const restored = await createQuestion(id, {
+        type: q.type,
+        title: q.title,
+        required: q.required,
+        order: q.order,
+        options: q.options || [],
+        allowMultiple: q.allowMultiple || false,
+        labelMin: q.labelMin || undefined,
+        labelMax: q.labelMax || undefined,
+      });
+      setQuestions((prev) => [...prev, restored].sort((a, b) => a.order - b.order));
+      setSnackbar({ open: false, message: "", variant: "default", undoData: null });
+    } catch (err) {
+      setSnackbar({ open: true, message: "Gagal membatalkan penghapusan.", variant: "error", undoData: null });
     } finally {
       setSaving(false);
     }
@@ -401,9 +430,8 @@ export default function FormDetail() {
         prev.map((q) => (q.id === editingQuestion.id ? updated : q))
       );
       setEditingQuestion(null);
-      setStatus({ type: "success", message: "Pertanyaan berhasil diperbarui." });
     } catch (err) {
-      setStatus({ type: "error", message: err.message });
+      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
     } finally {
       setSaving(false);
     }
@@ -424,7 +452,7 @@ export default function FormDetail() {
         reordered.map((q) => q.id),
       );
     } catch (err) {
-      setStatus({ type: "error", message: "Gagal menyimpan urutan." });
+      setSnackbar({ open: true, message: "Gagal menyimpan urutan.", variant: "error", undoData: null });
       console.log(err);
       setQuestions(questions);
     }
@@ -506,9 +534,9 @@ export default function FormDetail() {
                     <option value="archived">Archived</option>
                   </select>
                 </label>
-                {status.message ? (
-                  <p className={`form-status ${status.type}`}>
-                    {status.message}
+                {formError ? (
+                  <p className="form-status error">
+                    {formError}
                   </p>
                 ) : null}
                 <div className="action-row">
@@ -558,7 +586,7 @@ export default function FormDetail() {
                 Edit form
               </Button>
             )}
-            <Button variant="danger" onClick={handleDelete} disabled={saving}>
+            <Button variant="danger" onClick={() => setDeleteModal(true)} disabled={saving}>
               Hapus
             </Button>
           </div>
@@ -661,10 +689,28 @@ export default function FormDetail() {
         />
       )}
 
-      {/* Status message */}
-      {status.message && !editing ? (
-        <p className={`form-status ${status.type}`}>{status.message}</p>
-      ) : null}
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        variant={snackbar.variant}
+        actionLabel={snackbar.undoData ? "Undo" : undefined}
+        onAction={handleUndoDelete}
+        onClose={() => setSnackbar({ open: false, message: "", variant: "default", undoData: null })}
+        duration={5000}
+      />
+
+      {/* Modal for delete form confirmation */}
+      <Modal
+        open={deleteModal}
+        title="Hapus Form"
+        message="Apakah Anda yakin ingin menghapus form ini? Tindakan ini tidak dapat dibatalkan."
+        confirmLabel="Hapus"
+        cancelLabel="Batal"
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteModal(false)}
+      />
     </section>
   );
 }

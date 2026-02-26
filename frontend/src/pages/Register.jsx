@@ -14,6 +14,7 @@ export default function Register() {
   const [status, setStatus] = useState({ type: '', message: '' })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({ name: '', email: '', password: '' })
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -78,20 +79,31 @@ export default function Register() {
             disabled={loading}
             required
           />
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Minimal 8 karakter"
-            helper="Gunakan kombinasi huruf dan angka."
-            value={password}
-            onChange={(event) => {
-              setPassword(event.target.value)
-              if (errors.password) setErrors(prev => ({ ...prev, password: '' }))
-            }}
-            error={errors.password}
-            disabled={loading}
-            required
-          />
+          <div className="password-field-wrapper">
+            <Input
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Minimal 8 karakter"
+              helper="Gunakan kombinasi huruf dan angka."
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                if (errors.password) setErrors(prev => ({ ...prev, password: '' }))
+              }}
+              error={errors.password}
+              disabled={loading}
+              required
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((v) => !v)}
+              tabIndex={-1}
+              aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+            >
+              {showPassword ? '🙈' : '👁'}
+            </button>
+          </div>
           {status.message ? (
             <p className={`form-status ${status.type}`}>{status.message}</p>
           ) : null}

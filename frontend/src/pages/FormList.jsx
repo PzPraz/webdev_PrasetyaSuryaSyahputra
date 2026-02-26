@@ -96,9 +96,6 @@ export default function FormList() {
           <Button onClick={() => setShowCreate((v) => !v)}>
             {showCreate ? 'Tutup' : '+ Form baru'}
           </Button>
-          <Button onClick={fetchForms} variant="ghost">
-            Refresh
-          </Button>
         </div>
       </div>
 
