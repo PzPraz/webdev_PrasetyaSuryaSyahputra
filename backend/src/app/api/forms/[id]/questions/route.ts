@@ -40,6 +40,15 @@ export async function POST(
       );
     }
 
+    // Block adding questions if form already has responses
+    const responseCount = await prisma.response.count({ where: { formId } });
+    if (responseCount > 0) {
+      return NextResponse.json(
+        { message: "Tidak dapat menambah pertanyaan karena form sudah memiliki respons." },
+        { status: 400 }
+      );
+    }
+
     // Validate question type
     const validTypes = [
       "short_answer",

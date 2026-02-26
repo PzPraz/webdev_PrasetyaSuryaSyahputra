@@ -80,6 +80,8 @@ function SortableQuestionCard({
                 {...attributes}
                 {...listeners}
                 aria-label="Drag to reorder"
+                disabled={hasResponses}
+                style={hasResponses ? { opacity: 0.4, cursor: "not-allowed" } : {}}
               >
                 &#x2630;
               </button>
@@ -92,8 +94,9 @@ function SortableQuestionCard({
                 type="button"
                 className="btn-edit-question"
                 onClick={() => onEdit(question)}
-                disabled={saving}
+                disabled={saving || hasResponses}
                 aria-label="Edit"
+                title={hasResponses ? "Tidak dapat mengedit pertanyaan karena form sudah memiliki respons" : "Edit"}
               >
                 &#9998;
               </button>
@@ -1042,7 +1045,7 @@ export default function FormDetail() {
               Hapus
             </Button>
           </div>
-          {form.status === "draft" && !showAddQuestion && (
+          {form.status === "draft" && !showAddQuestion && !hasResponses && (
             <div className="add-menu-wrapper">
               <Button
                 onClick={() => setShowAddMenu((v) => !v)}
@@ -1137,7 +1140,7 @@ export default function FormDetail() {
                     )}
 
                   {/* Insert button between cards */}
-                  {form.status === "draft" && !editingQuestion && (
+                  {form.status === "draft" && !editingQuestion && !hasResponses && (
                     <div className="insert-between-wrapper">
                       <div className="insert-between-line" />
                       <div className="insert-between-btn-wrapper">
@@ -1266,7 +1269,7 @@ export default function FormDetail() {
                 Publikasi
               </button>
             )}
-            {form.status === "published" && (
+            {form.status === "published" && !hasResponses && (
               <button
                   type="button"
                   className="sidebar-btn sidebar-btn-draft"

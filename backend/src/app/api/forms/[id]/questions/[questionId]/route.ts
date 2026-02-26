@@ -56,23 +56,17 @@ export async function PATCH(
       );
     }
 
-    // Check if form has responses — block type change
+    // Check if form has responses — block all edits
     const responseCount = await prisma.response.count({ where: { formId: id } });
 
-    const body = await req.json();
-
     if (responseCount > 0) {
-      const currentQuestion = await prisma.question.findUnique({
-        where: { id: questionId },
-        select: { type: true },
-      });
-      if (currentQuestion && body.type && body.type !== currentQuestion.type) {
-        return NextResponse.json(
-          { message: "Tidak dapat mengubah tipe pertanyaan karena form sudah memiliki respons." },
-          { status: 400, headers: corsHeaders },
-        );
-      }
+      return NextResponse.json(
+        { message: "Tidak dapat mengedit pertanyaan karena form sudah memiliki respons." },
+        { status: 400, headers: corsHeaders },
+      );
     }
+
+    const body = await req.json();
 
     // Validate required fields
     if (!body?.type || typeof body.type !== "string") {

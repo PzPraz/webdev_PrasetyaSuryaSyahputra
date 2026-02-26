@@ -82,6 +82,17 @@ export async function PATCH(
         ? body.status
         : undefined;
 
+    // Block reverting to draft if form has responses
+    if (status === "draft" && existing.ownerId === userId) {
+      const responseCount = await prisma.response.count({ where: { formId: id } });
+      if (responseCount > 0) {
+        return NextResponse.json(
+          { message: "Tidak dapat mengembalikan ke draft karena form sudah memiliki respons." },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+    }
+
     const form = await prisma.form.update({
       where: { id },
       data: {
