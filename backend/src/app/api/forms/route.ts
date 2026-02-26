@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     const title = typeof body?.title === "string" ? body.title.trim() : "";
     const description =
       typeof body?.description === "string" ? body.description.trim() : null;
-    const status = ["draft", "published"].includes(body?.status)
+    const status = ["draft", "published", "closed"].includes(body?.status)
       ? body.status
       : "draft";
 

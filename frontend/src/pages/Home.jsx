@@ -34,7 +34,7 @@ export default function Home() {
         <h3>Fitur Utama</h3>
         <ul style={{ marginTop: '1rem', paddingLeft: '1.5rem', lineHeight: 1.8 }}>
           <li>Buat form dengan berbagai jenis pertanyaan</li>
-          <li>Kelola status form (draft, published)</li>
+          <li>Kelola status form (draft, published, closed)</li>
           <li>Antarmuka yang responsif dan modern</li>
           <li>Autentikasi dan keamanan data</li>
         </ul>

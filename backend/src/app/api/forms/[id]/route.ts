@@ -78,7 +78,8 @@ export async function PATCH(
       typeof body?.description === "string" ? body.description.trim() : undefined;
     const status =
       body?.status === "draft" ||
-      body?.status === "published"
+      body?.status === "published" ||
+      body?.status === "closed"
         ? body.status
         : undefined;
 

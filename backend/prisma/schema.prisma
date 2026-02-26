@@ -12,6 +12,7 @@ datasource db {
 enum FormStatus {
   draft
   published
+  closed
 }
 
 enum QuestionType {

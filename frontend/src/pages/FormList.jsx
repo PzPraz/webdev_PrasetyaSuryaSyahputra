@@ -195,6 +195,7 @@ export default function FormList() {
             <option value="all">Semua Status</option>
             <option value="draft">Draft</option>
             <option value="published">Published</option>
+            <option value="closed">Closed</option>
           </select>
           <select
             className="field-input filter-select"

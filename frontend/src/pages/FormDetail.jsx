@@ -689,7 +689,7 @@ export default function FormDetail() {
       setDraft((prev) => ({ ...prev, status: newStatus }));
       setSnackbar({
         open: true,
-        message: newStatus === "published" ? "Form berhasil dipublikasi." : "Form dikembalikan ke draft.",
+        message: newStatus === "published" ? "Form berhasil dipublikasi." : newStatus === "closed" ? "Form berhasil ditutup." : "Form dikembalikan ke draft.",
         variant: "success",
         undoData: null,
       });
@@ -1280,10 +1280,32 @@ export default function FormDetail() {
                   Kembali ke Draft
                 </button>
             )}
+            {form.status === "published" && (
+              <button
+                type="button"
+                className="sidebar-btn sidebar-btn-closed"
+                onClick={() => handleStatusChange("closed")}
+                disabled={saving}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                Tutup Form
+              </button>
+            )}
+            {form.status === "closed" && (
+              <button
+                type="button"
+                className="sidebar-btn sidebar-btn-publish"
+                onClick={() => handleStatusChange("published")}
+                disabled={saving}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                Buka Kembali
+              </button>
+            )}
           </div>
         </div>
 
-        {form.status === "published" && (
+        {(form.status === "published" || form.status === "closed") && (
           <div className="sidebar-card">
             <h4 className="sidebar-card-title">Bagikan</h4>
             <p className="sidebar-share-desc">Kirim link ini kepada responden untuk mengisi formulir.</p>
