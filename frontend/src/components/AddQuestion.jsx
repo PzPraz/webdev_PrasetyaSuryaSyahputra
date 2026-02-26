@@ -38,6 +38,7 @@ export default function AddQuestion({
   initialType,
   initialData,
   submitLabel,
+  disableTypeChange,
 }) {
   const [questionData, setQuestionData] = useState({
     type: initialData?.type || initialType || "short_answer",
@@ -215,6 +216,11 @@ export default function AddQuestion({
             questionData.type !== "text_block" && (
               <div className="field">
                 <label className="field-label">Jenis Pertanyaan</label>
+                {disableTypeChange && (
+                  <p className="field-hint" style={{ color: "#b45309", fontSize: "0.8rem", marginBottom: "0.5rem" }}>
+                    Tipe pertanyaan tidak dapat diubah karena form sudah memiliki respons.
+                  </p>
+                )}
                 <div className="question-type-group">
                   <button
                     type="button"
@@ -222,6 +228,7 @@ export default function AddQuestion({
                       questionData.type === "short_answer" ? "active" : ""
                     }`}
                     onClick={() => handleTypeChange("short_answer")}
+                    disabled={disableTypeChange}
                   >
                     Jawaban Singkat
                   </button>
@@ -231,6 +238,7 @@ export default function AddQuestion({
                       questionData.type === "long_answer" ? "active" : ""
                     }`}
                     onClick={() => handleTypeChange("long_answer")}
+                    disabled={disableTypeChange}
                   >
                     Jawaban Panjang
                   </button>
@@ -240,6 +248,7 @@ export default function AddQuestion({
                       questionData.type === "multiple_choice" ? "active" : ""
                     }`}
                     onClick={() => handleTypeChange("multiple_choice")}
+                    disabled={disableTypeChange}
                   >
                     Pilihan Ganda
                   </button>
@@ -251,6 +260,7 @@ export default function AddQuestion({
                         : ""
                     }`}
                     onClick={() => handleTypeChange("multiple_choice_dropdown")}
+                    disabled={disableTypeChange}
                   >
                     Dropdown
                   </button>
@@ -260,6 +270,7 @@ export default function AddQuestion({
                       questionData.type === "linear_scale" ? "active" : ""
                     }`}
                     onClick={() => handleTypeChange("linear_scale")}
+                    disabled={disableTypeChange}
                   >
                     Skala Linier
                   </button>
@@ -269,6 +280,7 @@ export default function AddQuestion({
                       questionData.type === "star_rating" ? "active" : ""
                     }`}
                     onClick={() => handleTypeChange("star_rating")}
+                    disabled={disableTypeChange}
                   >
                     Rating Bintang
                   </button>

@@ -56,7 +56,23 @@ export async function PATCH(
       );
     }
 
+    // Check if form has responses — block type change
+    const responseCount = await prisma.response.count({ where: { formId: id } });
+
     const body = await req.json();
+
+    if (responseCount > 0) {
+      const currentQuestion = await prisma.question.findUnique({
+        where: { id: questionId },
+        select: { type: true },
+      });
+      if (currentQuestion && body.type && body.type !== currentQuestion.type) {
+        return NextResponse.json(
+          { message: "Tidak dapat mengubah tipe pertanyaan karena form sudah memiliki respons." },
+          { status: 400, headers: corsHeaders },
+        );
+      }
+    }
 
     // Validate required fields
     if (!body?.type || typeof body.type !== "string") {
@@ -209,6 +225,15 @@ export async function DELETE(
       return NextResponse.json(
         { message: "Forbidden." },
         { status: 403, headers: corsHeaders },
+      );
+    }
+
+    // Check if form has responses — block deletion
+    const responseCount = await prisma.response.count({ where: { formId: id } });
+    if (responseCount > 0) {
+      return NextResponse.json(
+        { message: "Tidak dapat menghapus pertanyaan karena form sudah memiliki respons." },
+        { status: 400, headers: corsHeaders },
       );
     }
 

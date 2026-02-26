@@ -39,6 +39,7 @@ function SortableQuestionCard({
   onDelete,
   onEdit,
   isDraft,
+  hasResponses,
   children,
 }) {
   const {
@@ -100,8 +101,9 @@ function SortableQuestionCard({
                 type="button"
                 className="btn-delete-question"
                 onClick={() => onDelete(question.id)}
-                disabled={saving}
+                disabled={saving || hasResponses}
                 aria-label="Hapus"
+                title={hasResponses ? "Tidak dapat menghapus pertanyaan karena form sudah memiliki respons" : "Hapus"}
               >
                 x
               </button>
@@ -312,6 +314,9 @@ export default function FormDetail() {
     status: "draft",
   });
 
+  const isDraft = form?.status === "draft";
+  const hasResponses = form?.responseCount > 0;
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, {
@@ -440,7 +445,6 @@ export default function FormDetail() {
             updated.map((q) => q.id),
           );
         } catch (_) {
-          /* best effort */
         }
       } else {
         setQuestions((prev) => [...prev, newQuestion]);
@@ -671,6 +675,36 @@ export default function FormDetail() {
     setPreviewAnswers({});
     setPreviewPage(0);
     setPreviewFieldErrors({});
+  };
+
+  /* ── Status change helpers ── */
+  const handleStatusChange = async (newStatus) => {
+    try {
+      setSaving(true);
+      const updated = await updateForm(id, { status: newStatus });
+      setForm(updated);
+      setDraft((prev) => ({ ...prev, status: newStatus }));
+      setSnackbar({
+        open: true,
+        message: newStatus === "published" ? "Form berhasil dipublikasi." : newStatus === "archived" ? "Form berhasil diarsipkan." : "Form dikembalikan ke draft.",
+        variant: "success",
+        undoData: null,
+      });
+    } catch (err) {
+      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const [linkCopied, setLinkCopied] = useState(false);
+  const respondentLink = `${window.location.origin}/respond/${id}`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(respondentLink).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
   };
 
   if (loading) {
@@ -910,7 +944,9 @@ export default function FormDetail() {
   }
 
   return (
-    <section className="page">
+    <section className="page form-detail-layout">
+      {/* ── Main content ── */}
+      <div className="form-detail-main">
       {/* Form Header Card with purple banner */}
       <div className="form-header-card">
         <div className="form-header-banner" />
@@ -1006,7 +1042,7 @@ export default function FormDetail() {
               Hapus
             </Button>
           </div>
-          {form.status === "draft" && (
+          {form.status === "draft" && !showAddQuestion && (
             <div className="add-menu-wrapper">
               <Button
                 onClick={() => setShowAddMenu((v) => !v)}
@@ -1064,6 +1100,7 @@ export default function FormDetail() {
                       onSubmit={handleUpdateQuestion}
                       initialData={editingQuestion}
                       submitLabel="Simpan Perubahan"
+                      disableTypeChange={hasResponses}
                     />
                   ) : (
                     <SortableQuestionCard
@@ -1073,6 +1110,7 @@ export default function FormDetail() {
                       onDelete={handleDeleteQuestion}
                       onEdit={handleEditQuestion}
                       isDraft={form.status === "draft"}
+                      hasResponses={hasResponses}
                     >
                       <QuestionContent question={question} />
                     </SortableQuestionCard>
@@ -1206,6 +1244,107 @@ export default function FormDetail() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteModal(false)}
       />
+      </div>
+
+      {/* ── Sidebar ── */}
+      <aside className="form-detail-sidebar">
+        <div className="sidebar-card">
+          <h4 className="sidebar-card-title">Status</h4>
+          <span className={`pill pill-${(form.status || "draft").toLowerCase()}`}>
+            {labelStatus(form.status)}
+          </span>
+
+          <div className="sidebar-actions">
+            {form.status === "draft" && (
+              <button
+                type="button"
+                className="sidebar-btn sidebar-btn-publish"
+                onClick={() => handleStatusChange("published")}
+                disabled={saving || questions.length === 0}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                Publikasi
+              </button>
+            )}
+            {form.status === "published" && (
+              <>
+                <button
+                  type="button"
+                  className="sidebar-btn sidebar-btn-draft"
+                  onClick={() => handleStatusChange("draft")}
+                  disabled={saving}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Kembali ke Draft
+                </button>
+                <button
+                  type="button"
+                  className="sidebar-btn sidebar-btn-archive"
+                  onClick={() => handleStatusChange("archived")}
+                  disabled={saving}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                  Arsipkan
+                </button>
+              </>
+            )}
+            {form.status === "archived" && (
+              <button
+                type="button"
+                className="sidebar-btn sidebar-btn-draft"
+                onClick={() => handleStatusChange("draft")}
+                disabled={saving}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Kembali ke Draft
+              </button>
+            )}
+          </div>
+        </div>
+
+        {form.status === "published" && (
+          <div className="sidebar-card">
+            <h4 className="sidebar-card-title">Bagikan</h4>
+            <p className="sidebar-share-desc">Kirim link ini kepada responden untuk mengisi formulir.</p>
+            <div className="sidebar-link-box">
+              <input
+                type="text"
+                className="sidebar-link-input"
+                value={respondentLink}
+                readOnly
+                onFocus={(e) => e.target.select()}
+              />
+              <button
+                type="button"
+                className="sidebar-copy-btn"
+                onClick={handleCopyLink}
+              >
+                {linkCopied ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="sidebar-card">
+          <h4 className="sidebar-card-title">Info</h4>
+          <div className="sidebar-info-row">
+            <span className="sidebar-info-label">Response</span>
+            <span>{questions.filter((q) => q.type !== "page_break" && q.type !== "text_block").length}</span>
+          </div>
+          <div className="sidebar-info-row">
+            <span className="sidebar-info-label">Diperbarui</span>
+            <span>{formatDate(form.updatedAt)}</span>
+          </div>
+          <div className="sidebar-info-row">
+            <span className="sidebar-info-label">Dibuat</span>
+            <span>{formatDate(form.createdAt)}</span>
+          </div>
+        </div>
+      </aside>
     </section>
   );
 }

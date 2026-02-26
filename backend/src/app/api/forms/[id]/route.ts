@@ -22,6 +22,7 @@ export async function GET(
       ownerId: true,
       createdAt: true,
       updatedAt: true,
+      _count: { select: { responses: true } },
     },
   });
 
@@ -32,7 +33,10 @@ export async function GET(
     );
   }
 
-  return NextResponse.json(form, { headers: corsHeaders });
+  return NextResponse.json(
+    { ...form, responseCount: form._count.responses, _count: undefined },
+    { headers: corsHeaders },
+  );
 }
 
 export async function PATCH(
