@@ -261,9 +261,21 @@ export async function deleteQuestion(formId, questionId) {
 }
 
 export async function reorderQuestions(formId, orderedIds) {
-    return request(`/api/forms/${formId}/questions/reorder`, {
-        method: 'PATCH',
-        headers: { ...authHeaders() },
-        body: JSON.stringify({ orderedIds }),
-    });
+  const token = getToken();
+  if (!token) throw new Error("Sesi telah berakhir. Silakan login kembali.");
+
+  const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/questions/reorder`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ orderedIds }),
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
 }
