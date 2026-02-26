@@ -133,6 +133,17 @@ export async function PATCH(
           { status: 400, headers: corsHeaders },
         );
       }
+
+      // Check for duplicate options (case and trim insensitive)
+      const normalizedOptions = body.options.map((opt: string) => opt.trim().toLowerCase());
+      const hasDuplicateOption = new Set(normalizedOptions).size !== normalizedOptions.length;
+
+      if (hasDuplicateOption) {
+        return NextResponse.json(
+          { message: "Multiple choice options must be unique." },
+          { status: 400, headers: corsHeaders },
+        );
+      }
     }
 
     // Determine order (add to end)

@@ -101,9 +101,13 @@ export async function PATCH(
         ...(description !== undefined ? { description } : {}),
         ...(status !== undefined ? { status } : {}),
       },
+      include: { _count: { select: { responses: true } } },
     });
 
-    return NextResponse.json(form, { headers: corsHeaders });
+    return NextResponse.json(
+      { ...form, responseCount: form._count.responses, _count: undefined },
+      { headers: corsHeaders },
+    );
   } catch {
     return NextResponse.json(
       { message: "Unexpected error." },

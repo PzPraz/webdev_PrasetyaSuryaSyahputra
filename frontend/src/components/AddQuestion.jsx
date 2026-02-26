@@ -49,6 +49,7 @@ export default function AddQuestion({
     labelMin: initialData?.labelMin || "",
     labelMax: initialData?.labelMax || "",
   });
+  const [hasDuplicateError, setHasDuplicateError] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -139,6 +140,21 @@ export default function AddQuestion({
     linear_scale: "Skala Linier",
     star_rating: "Rating Bintang",
   }[questionData.type] || "Pertanyaan Baru";
+
+
+  const getDuplicateIndices = () => {
+    if (!TYPES_WITH_OPTIONS.includes(questionData.type)) return [];
+    
+    const normalized = questionData.options.map(opt => opt.trim().toLowerCase());
+    return normalized.map((val, idx) => {
+      if (!val) return false;
+      return normalized.indexOf(val) !== idx || normalized.lastIndexOf(val) !== idx;
+    });
+  };
+
+  const duplicateMap = getDuplicateIndices();
+  const hasDuplicates = duplicateMap.some(isDup => isDup === true);
+  const isSubmitDisabled = hasDuplicates || (questionData.type !== "page_break" && !questionData.title.trim());
 
   return (
     <div className="question-card question-card-accent">
@@ -311,27 +327,42 @@ export default function AddQuestion({
               <div className="field">
                 <label className="field-label">Pilihan Jawaban</label>
                 <div className="options-list">
-                  {questionData.options.map((option, index) => (
-                    <div key={index} className="option-row">
-                      <input
-                        type="text"
-                        className="field-input"
-                        placeholder={`Pilihan ${index + 1}`}
-                        value={option}
-                        onChange={(e) => handleOptionChange(index, e.target.value)}
-                      />
-                      {questionData.options.length > 1 && (
-                        <button
-                          type="button"
-                          className="btn-remove-option"
-                          onClick={() => handleRemoveOption(index)}
-                          aria-label="Hapus pilihan"
-                        >
-                          x
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                  {questionData.options.map((option, index) => {
+                    const isDup = duplicateMap[index];
+
+                    return (
+                      <div key={index} className="option-row-container">
+                        <div className="option-row">
+                          <input
+                            type="text"
+                            className={`field-input ${isDup ? "field-input-error" : ""}`}
+                            style={isDup ? { 
+                              borderColor: "#dc2626", 
+                              backgroundColor: "#fef2f2",
+                              outlineColor: "#dc2626" 
+                            } : {}}
+                            placeholder={`Pilihan ${index + 1}`}
+                            value={option}
+                            onChange={(e) => handleOptionChange(index, e.target.value)}
+                          />
+                          {questionData.options.length > 1 && (
+                            <button
+                              type="button"
+                              className="btn-remove-option"
+                              onClick={() => handleRemoveOption(index)}
+                            >
+                              x
+                            </button>
+                          )}
+                        </div>
+                        {isDup && (
+                          <span style={{ color: "#dc2626", fontSize: "0.75rem", marginLeft: "0.5rem" }}>
+                            Pilihan ini duplikat
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 <button
                   type="button"
@@ -430,7 +461,7 @@ export default function AddQuestion({
           )}
 
           <div className="action-row">
-            <Button type="submit">
+            <Button type="submit" disabled={isSubmitDisabled}>
               {submitLabel ||
                 (questionData.type === "page_break"
                   ? "Tambah Page Break"
