@@ -14,6 +14,12 @@ function ProtectedRoute({ children }) {
   return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 
+// Redirect to /forms if logged in, otherwise show Home
+function HomeOrForms() {
+  const isAuthenticated = !!getToken()
+  return isAuthenticated ? <Navigate to="/forms" replace /> : <Home />
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -21,7 +27,7 @@ function App() {
         <Navbar />
         <main className="app-main">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<HomeOrForms />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route

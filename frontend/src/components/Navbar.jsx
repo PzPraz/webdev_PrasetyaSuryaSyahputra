@@ -24,12 +24,6 @@ export default function Navbar() {
         <div className="nav-links">
           {isAuthenticated ? (
             <>
-              <Link
-                to="/forms"
-                className={location.pathname === "/forms" ? "active" : ""}
-              >
-                Forms
-              </Link>
               <button
                 onClick={handleLogout}
                 style={{

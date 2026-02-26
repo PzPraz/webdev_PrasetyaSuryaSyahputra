@@ -243,6 +243,8 @@ export default function FormDetail() {
   const [addType, setAddType] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [insertAfterIndex, setInsertAfterIndex] = useState(null);
+  const [insertMenuIndex, setInsertMenuIndex] = useState(null);
   const [formError, setFormError] = useState("");
   const [snackbar, setSnackbar] = useState({ open: false, message: "", variant: "default", undoData: null });
   const [deleteModal, setDeleteModal] = useState(false);
@@ -348,13 +350,32 @@ export default function FormDetail() {
   const handleAddQuestion = async (questionData) => {
     try {
       setSaving(true);
+      const insertAt = insertAfterIndex !== null ? insertAfterIndex + 1 : questions.length;
       const newQuestion = await createQuestion(id, {
         ...questionData,
-        order: questions.length,
+        order: insertAt,
       });
-      setQuestions((prev) => [...prev, newQuestion]);
+
+      // If inserting in the middle, update order of subsequent questions
+      if (insertAt < questions.length) {
+        const updated = [
+          ...questions.slice(0, insertAt),
+          newQuestion,
+          ...questions.slice(insertAt),
+        ];
+        setQuestions(updated);
+        // Reorder on server
+        try {
+          await reorderQuestions(id, updated.map((q) => q.id));
+        } catch (_) { /* best effort */ }
+      } else {
+        setQuestions((prev) => [...prev, newQuestion]);
+      }
+
       setShowAddQuestion(false);
       setAddType(null);
+      setInsertAfterIndex(null);
+      setInsertMenuIndex(null);
     } catch (err) {
       setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
     } finally {
@@ -460,8 +481,18 @@ export default function FormDetail() {
 
   const openAddMenu = (type) => {
     setShowAddMenu(false);
+    setInsertMenuIndex(null);
     setAddType(type);
     setShowAddQuestion(true);
+    setInsertAfterIndex(null);
+  };
+
+  const openInsertMenu = (index, type) => {
+    setInsertMenuIndex(null);
+    setAddType(type);
+    setShowAddQuestion(true);
+    setInsertAfterIndex(index);
+    setEditingQuestion(null);
   };
 
   if (loading) {
@@ -491,11 +522,6 @@ export default function FormDetail() {
 
   return (
     <section className="page">
-      {/* Back link */}
-      <Link to="/forms" className="link">
-        &larr; Kembali
-      </Link>
-
       {/* Form Header Card with purple banner */}
       <div className="form-header-card">
         <div className="form-header-banner" />
@@ -637,30 +663,69 @@ export default function FormDetail() {
             strategy={verticalListSortingStrategy}
           >
             <div className="question-list">
-              {questions.map((question) => (
-                editingQuestion && editingQuestion.id === question.id ? (
-                  <div key={question.id} className="question-card question-card-accent">
-                    <div className="question-card-body">
+              {questions.map((question, idx) => (
+                <div key={question.id}>
+                  {editingQuestion && editingQuestion.id === question.id ? (
+                    <AddQuestion
+                      onCancel={() => setEditingQuestion(null)}
+                      onSubmit={handleUpdateQuestion}
+                      initialData={editingQuestion}
+                      submitLabel="Simpan Perubahan"
+                    />
+                  ) : (
+                    <SortableQuestionCard
+                      key={question.id}
+                      question={question}
+                      saving={saving}
+                      onDelete={handleDeleteQuestion}
+                      onEdit={handleEditQuestion}
+                      isDraft={form.status === "draft"}
+                    >
+                      <QuestionContent question={question} />
+                    </SortableQuestionCard>
+                  )}
+
+                  {/* Inline insert: show AddQuestion form after this card */}
+                  {showAddQuestion && insertAfterIndex === idx && !editingQuestion && form.status === "draft" && (
+                    <div style={{ marginTop: "0.5rem" }}>
                       <AddQuestion
-                        onCancel={() => setEditingQuestion(null)}
-                        onSubmit={handleUpdateQuestion}
-                        initialData={editingQuestion}
-                        submitLabel="Simpan Perubahan"
+                        onCancel={() => {
+                          setShowAddQuestion(false);
+                          setAddType(null);
+                          setInsertAfterIndex(null);
+                        }}
+                        onSubmit={handleAddQuestion}
+                        initialType={addType === "question" ? "short_answer" : addType}
                       />
                     </div>
-                  </div>
-                ) : (
-                  <SortableQuestionCard
-                    key={question.id}
-                    question={question}
-                    saving={saving}
-                    onDelete={handleDeleteQuestion}
-                    onEdit={handleEditQuestion}
-                    isDraft={form.status === "draft"}
-                  >
-                    <QuestionContent question={question} />
-                  </SortableQuestionCard>
-                )
+                  )}
+
+                  {/* Insert button between cards */}
+                  {form.status === "draft" && !editingQuestion && (
+                    <div className="insert-between-wrapper">
+                      <div className="insert-between-line" />
+                      <div className="insert-between-btn-wrapper">
+                        <button
+                          type="button"
+                          className="insert-between-btn"
+                          onClick={() => setInsertMenuIndex(insertMenuIndex === idx ? null : idx)}
+                          disabled={saving}
+                          aria-label="Sisipkan item"
+                        >
+                          +
+                        </button>
+                        {insertMenuIndex === idx && (
+                          <div className="add-menu-dropdown insert-menu-dropdown">
+                            <button type="button" className="add-menu-item" onClick={() => openInsertMenu(idx, "question")}>Pertanyaan</button>
+                            <button type="button" className="add-menu-item" onClick={() => openInsertMenu(idx, "text_block")}>Blok Teks</button>
+                            <button type="button" className="add-menu-item" onClick={() => openInsertMenu(idx, "page_break")}>Page Break</button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="insert-between-line" />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </SortableContext>

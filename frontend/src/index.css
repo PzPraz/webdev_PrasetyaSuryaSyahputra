@@ -908,6 +908,81 @@ p {
   background: #f1f3f4;
 }
 
+/* ─── Insert between questions ─── */
+
+.question-list > div {
+  position: relative;
+}
+
+.insert-between-wrapper {
+  position: absolute;
+  bottom: -0.375rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  z-index: 10;
+  transform: translateY(50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.question-list > div:hover > .insert-between-wrapper,
+.insert-between-wrapper:hover,
+.insert-between-wrapper:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.insert-between-line {
+  flex: 1;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.4;
+}
+
+.insert-between-btn-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.insert-between-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  background: var(--card);
+  color: var(--accent);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.insert-between-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.insert-between-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.insert-menu-dropdown {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(100% + 4px);
+  right: auto;
+}
+
 /* ─── Textarea field ─── */
 
 .field-textarea {
