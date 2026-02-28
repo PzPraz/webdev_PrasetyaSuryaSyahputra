@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Button from "./Button.jsx";
+import Button from "../ui/Button.jsx";
 
 function StarRatingFormPreview() {
   const [selected, setSelected] = useState(0);

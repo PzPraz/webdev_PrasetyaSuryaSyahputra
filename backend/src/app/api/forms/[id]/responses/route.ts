@@ -1,6 +1,70 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { corsHeaders } from "@/lib/cors";
+import { getAuthUserId } from "@/lib/request";
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
+// GET /api/forms/[id]/responses — get all responses (auth required, owner only)
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id: formId } = await params;
+  const userId = getAuthUserId(req);
+
+  if (!userId) {
+    return NextResponse.json(
+      { message: "Unauthorized." },
+      { status: 401, headers: corsHeaders },
+    );
+  }
+
+  try {
+    const form = await prisma.form.findUnique({
+      where: { id: formId },
+      select: { ownerId: true },
+    });
+
+    if (!form) {
+      return NextResponse.json(
+        { message: "Form not found." },
+        { status: 404, headers: corsHeaders },
+      );
+    }
+
+    if (form.ownerId !== userId) {
+      return NextResponse.json(
+        { message: "Forbidden." },
+        { status: 403, headers: corsHeaders },
+      );
+    }
+
+    const responses = await prisma.response.findMany({
+      where: { formId },
+      include: {
+        answers: {
+          select: {
+            questionId: true,
+            value: true,
+            values: true,
+          },
+        },
+      },
+      orderBy: { submittedAt: "desc" },
+    });
+
+    return NextResponse.json(responses, { headers: corsHeaders });
+  } catch (error) {
+    console.error("Get responses error:", error);
+    return NextResponse.json(
+      { message: "Unexpected error." },
+      { status: 500, headers: corsHeaders },
+    );
+  }
+}
 
 // POST /api/forms/[id]/responses — submit a response (no auth)
 export async function POST(

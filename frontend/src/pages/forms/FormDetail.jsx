@@ -12,15 +12,17 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import Button from "../components/Button.jsx";
-import Input from "../components/Input.jsx";
-import AddQuestion from "../components/AddQuestion.jsx";
-import Snackbar from "../components/Snackbar.jsx";
-import Modal from "../components/Modal.jsx";
+import Button from "../../components/ui/Button.jsx";
+import Input from "../../components/ui/Input.jsx";
+import AddQuestion from "../../components/form/AddQuestion.jsx";
+import Snackbar from "../../components/ui/Snackbar.jsx";
+import Modal from "../../components/ui/Modal.jsx";
+import SortableQuestionCard from "../../components/form/SortableQuestionCard.jsx";
+import QuestionContent from "../../components/form/QuestionContent.jsx";
+import { StarRatingInput, LinearScaleInput } from "../../components/form/PreviewInputs.jsx";
+import ResponseCharts from "../../components/form/ResponseCharts.jsx";
 import {
   deleteForm,
   getFormById,
@@ -30,278 +32,9 @@ import {
   updateQuestion,
   deleteQuestion,
   reorderQuestions,
+  getResponses,
   ApiError,
-} from "../lib/api.js";
-
-/* ── Sortable wrapper for each question card ── */
-function SortableQuestionCard({
-  question,
-  saving,
-  onDelete,
-  onEdit,
-  isDraft,
-  hasResponses,
-  children,
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: question.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const isPageBreak = question.type === "page_break";
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={
-        isPageBreak ? "page-break-card" : "question-card question-card-accent"
-      }
-    >
-      <div className={isPageBreak ? "page-break-body" : "question-card-body"}>
-        <div className="question-header">
-          <div
-            className="question-info"
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-          >
-            {isDraft && (
-              <button
-                type="button"
-                className="drag-handle"
-                {...attributes}
-                {...listeners}
-                aria-label="Drag to reorder"
-                disabled={hasResponses}
-                style={hasResponses ? { opacity: 0.4, cursor: "not-allowed" } : {}}
-              >
-                &#x2630;
-              </button>
-            )}
-            <div style={{ flex: 1 }}>{children}</div>
-          </div>
-          {isDraft && (
-            <div style={{ display: "flex", gap: "0.25rem" }}>
-              <button
-                type="button"
-                className="btn-edit-question"
-                onClick={() => onEdit(question)}
-                disabled={saving || hasResponses}
-                aria-label="Edit"
-                title={hasResponses ? "Tidak dapat mengedit pertanyaan karena form sudah memiliki respons" : "Edit"}
-              >
-                &#9998;
-              </button>
-              <button
-                type="button"
-                className="btn-delete-question"
-                onClick={() => onDelete(question.id)}
-                disabled={saving || hasResponses}
-                aria-label="Hapus"
-                title={hasResponses ? "Tidak dapat menghapus pertanyaan karena form sudah memiliki respons" : "Hapus"}
-              >
-              <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5.12817 8.15391C5.12817 10.4103 5.12817 13.5898 5.12817 15.1283C5.23074 16.4616 5.3333 18.2052 5.43587 19.436C5.53843 20.8719 6.7692 22.0001 8.2051 22.0001H15.7948C17.2307 22.0001 18.4615 20.8719 18.5641 19.436C18.6666 18.2052 18.7692 16.4616 18.8718 15.1283C18.9743 13.5898 18.8718 10.4103 18.8718 8.15391H5.12817Z" fill="#030D45"/>
-              <path d="M19.1795 5.07698H16.6154L15.7949 3.53852C15.2821 2.61545 14.359 2.00006 13.3333 2.00006H10.8718C9.84615 2.00006 8.82051 2.61545 8.41026 3.53852L7.38462 5.07698H4.82051C4.41026 5.07698 4 5.48724 4 5.8975C4 6.30775 4.41026 6.71801 4.82051 6.71801H19.1795C19.5897 6.71801 20 6.41032 20 5.8975C20 5.38468 19.5897 5.07698 19.1795 5.07698ZM9.12821 5.07698L9.64103 4.25647C9.84615 3.84621 10.2564 3.53852 10.7692 3.53852H13.2308C13.7436 3.53852 14.1538 3.74365 14.359 4.25647L14.8718 5.07698H9.12821Z" fill="#030D45"/>
-              </svg>
-              
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Star rating interactive preview ── */
-function StarRatingPreview() {
-  const [selected, setSelected] = useState(0);
-  const [hovered, setHovered] = useState(0);
-
-  return (
-    <div className="star-rating-preview" onMouseLeave={() => setHovered(0)}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <div key={n} className="star-item">
-          <span className="star-number">{n}</span>
-          <span
-            className={`star-icon ${
-              n <= (hovered || selected) ? "star-filled" : "star-empty"
-            }`}
-            onClick={() => setSelected(n === selected ? 0 : n)}
-            onMouseEnter={() => setHovered(n)}
-          >
-            &#9733;
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Interactive inputs for preview mode ── */
-function StarRatingInput({ value, onChange }) {
-  const [hovered, setHovered] = useState(0);
-  return (
-    <div className="star-rating-preview" onMouseLeave={() => setHovered(0)}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <div key={n} className="star-item">
-          <span className="star-number">{n}</span>
-          <span
-            className={`star-icon ${n <= (hovered || value) ? "star-filled" : "star-empty"}`}
-            onClick={() => onChange(n === value ? 0 : n)}
-            onMouseEnter={() => setHovered(n)}
-            style={{ cursor: "pointer" }}
-          >
-            &#9733;
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function LinearScaleInput({ value, onChange, labelMin, labelMax }) {
-  return (
-    <div className="linear-scale-preview">
-      <div className="rating-preview">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <div
-            key={n}
-            className={`rating-circle ${value === String(n) ? "rating-circle-selected" : ""}`}
-            onClick={() => onChange(String(n))}
-            style={{ cursor: "pointer" }}
-          >
-            {n}
-          </div>
-        ))}
-      </div>
-      {(labelMin || labelMax) && (
-        <div className="scale-labels-row">
-          <span className="scale-label">{labelMin || ""}</span>
-          <span className="scale-label">{labelMax || ""}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function QuestionContent({ question }) {
-  if (question.type === "page_break") {
-    return (
-      <div className="page-break-content">
-        <span className="page-break-line" />
-        <span className="page-break-label">
-          {question.title || "Page Break"}
-        </span>
-        <span className="page-break-line" />
-      </div>
-    );
-  }
-
-  if (question.type === "text_block") {
-    return (
-      <div className="text-block-content">
-        <p className="text-block-text">{question.title}</p>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <p className="question-title">
-        {question.title}
-        {question.required && <span className="required-mark">*</span>}
-      </p>
-
-      {question.type === "short_answer" && (
-        <div className="answer-placeholder">Jawaban singkat</div>
-      )}
-
-      {question.type === "long_answer" && (
-        <textarea
-          className="field-input field-textarea"
-          placeholder="Jawaban panjang responden..."
-          rows={4}
-          disabled
-          style={{
-            backgroundColor: "#f9f1ec",
-            cursor: "not-allowed",
-            marginTop: "0.75rem",
-          }}
-        />
-      )}
-
-      {question.type === "multiple_choice" && question.options?.length > 0 && (
-        <div className="question-options">
-          {question.options.map((option, i) => (
-            <p key={i} className="option-preview">
-              {option}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {question.type === "multiple_choice_dropdown" &&
-        question.options?.length > 0 && (
-          <div className="question-options">
-            <select className="dropdown-preview" disabled>
-              <option value="">Pilih opsi</option>
-              {question.options.map((option, i) => (
-                <option key={i} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-      {question.type === "date_picker" && (
-        <div className="question-options">
-          <div className="date-input-wrapper">
-            <input 
-              type="date"
-              className="field-input date-preview"
-              style={{
-                backgroundColor: "#f9fafb",
-                color: "#6b7280"
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {question.type === "linear_scale" && (
-        <div className="linear-scale-preview">
-          <div className="rating-preview">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <div key={n} className="rating-circle">
-                {n}
-              </div>
-            ))}
-          </div>
-          {(question.labelMin || question.labelMax) && (
-            <div className="scale-labels-row">
-              <span className="scale-label">{question.labelMin || ""}</span>
-              <span className="scale-label">{question.labelMax || ""}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {question.type === "star_rating" && <StarRatingPreview />}
-    </>
-  );
-}
+} from "../../lib/api.js";
 
 /* ── Main component ── */
 export default function FormDetail() {
@@ -311,7 +44,7 @@ export default function FormDetail() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [errorType, setErrorType] = useState(null); // 'not-found' | 'forbidden' | 'generic'
+  const [errorType, setErrorType] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showAddQuestion, setShowAddQuestion] = useState(false);
@@ -332,6 +65,9 @@ export default function FormDetail() {
   const [previewAnswers, setPreviewAnswers] = useState({});
   const [previewPage, setPreviewPage] = useState(0);
   const [previewFieldErrors, setPreviewFieldErrors] = useState({});
+  const [activeTab, setActiveTab] = useState("questions");
+  const [responses, setResponses] = useState([]);
+  const [responsesLoading, setResponsesLoading] = useState(false);
   const [draft, setDraft] = useState({
     title: "",
     description: "",
@@ -385,6 +121,25 @@ export default function FormDetail() {
   useEffect(() => {
     fetchForm();
   }, [id]);
+
+  const fetchResponses = async () => {
+    try {
+      setResponsesLoading(true);
+      const data = await getResponses(id);
+      setResponses(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch responses:", err);
+      setResponses([]);
+    } finally {
+      setResponsesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "responses" && form) {
+      fetchResponses();
+    }
+  }, [activeTab, id]);
 
   const formatDate = (value) => {
     if (!value) return "-";
@@ -773,7 +528,7 @@ export default function FormDetail() {
     return (
       <section className="page">
         <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
-          <img src={cfg.img} alt={cfg.alt} style={{ maxWidth: '280px', marginBottom: '1rem' }} />
+          <img src={cfg.img} alt={cfg.alt} style={{ maxWidth: '500px', width: '100%',marginBottom: '1rem' }} />
           <h3>{cfg.title}</h3>
           <p className="subtext" style={{ marginTop: '0.5rem' }}>{cfg.subtitle}</p>
           <Link
@@ -1018,6 +773,36 @@ export default function FormDetail() {
     <section className="page form-detail-layout">
       {/* ── Main content ── */}
       <div className="form-detail-main">
+
+      {/* ── Response tab ── */}
+      {activeTab === "responses" && (
+        <>
+          <div className="form-header-card">
+            <div className="form-header-banner" />
+            <div className="form-header-body">
+              <h1>{form.title}</h1>
+              <p className="form-desc">{form.description || "Tanpa deskripsi"}</p>
+              <div className="detail-meta" style={{ marginTop: "0.75rem" }}>
+                <span className={`pill pill-${(form.status || "draft").toLowerCase()}`}>
+                  {labelStatus(form.status)}
+                </span>
+                <span className="meta">{form.responseCount ?? 0} response</span>
+              </div>
+            </div>
+          </div>
+          {responsesLoading ? (
+            <div className="card" style={{ textAlign: "center", padding: "2rem" }}>
+              <p className="subtext">Memuat data response...</p>
+            </div>
+          ) : (
+            <ResponseCharts questions={questions} responses={responses} />
+          )}
+        </>
+      )}
+
+      {/* ── Questions tab ── */}
+      {activeTab === "questions" && (
+        <>
       {/* Form Header Card with purple banner */}
       <div className="form-header-card">
         <div className="form-header-banner" />
@@ -1315,10 +1100,31 @@ export default function FormDetail() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteModal(false)}
       />
+      </>
+      )}
       </div>
 
       {/* ── Sidebar ── */}
       <aside className="form-detail-sidebar">
+        <div className="sidebar-card sidebar-tabs">
+          <button
+            type="button"
+            className={`sidebar-tab ${activeTab === "questions" ? "sidebar-tab-active" : ""}`}
+            onClick={() => setActiveTab("questions")}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Pertanyaan
+          </button>
+          <button
+            type="button"
+            className={`sidebar-tab ${activeTab === "responses" ? "sidebar-tab-active" : ""}`}
+            onClick={() => setActiveTab("responses")}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Response {(form.responseCount ?? 0) > 0 && <span className="sidebar-tab-badge">{form.responseCount}</span>}
+          </button>
+        </div>
+
         <div className="sidebar-card">
           <h4 className="sidebar-card-title">Status</h4>
           <span className={`pill pill-${(form.status || "draft").toLowerCase()}`}>

@@ -1,31 +1,34 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import Button from '../components/Button.jsx'
-import Input from '../components/Input.jsx'
-import Spinner from '../components/Spinner.jsx'
-import { loginUser, storeToken } from '../lib/api.js'
-import { validateEmail, validatePassword } from '../lib/validation.js'
+import Button from '../../components/ui/Button.jsx'
+import Input from '../../components/ui/Input.jsx'
+import Spinner from '../../components/ui/Spinner.jsx'
+import { registerUser, storeToken } from '../../lib/api.js'
+import { validateEmail, validatePassword, validateName } from '../../lib/validation.js'
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate()
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState({ type: '', message: '' })
   const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState({ email: '', password: '' })
+  const [errors, setErrors] = useState({ name: '', email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (event) => {
     event.preventDefault()
     setStatus({ type: '', message: '' })
-    setErrors({ email: '', password: '' })
+    setErrors({ name: '', email: '', password: '' })
 
     // Validate inputs
+    const nameValidation = validateName(name)
     const emailValidation = validateEmail(email)
     const passwordValidation = validatePassword(password)
 
-    if (!emailValidation.valid || !passwordValidation.valid) {
+    if (!nameValidation.valid || !emailValidation.valid || !passwordValidation.valid) {
       setErrors({
+        name: nameValidation.error || '',
         email: emailValidation.error || '',
         password: passwordValidation.error || '',
       })
@@ -34,9 +37,9 @@ export default function Login() {
 
     try {
       setLoading(true)
-      const result = await loginUser({ email, password })
+      const result = await registerUser({ name, email, password })
       storeToken(result.token)
-      setStatus({ type: 'success', message: 'Login berhasil. Redirecting...' })
+      setStatus({ type: 'success', message: 'Register berhasil. Redirecting...' })
       setTimeout(() => navigate('/forms'), 500)
     } catch (error) {
       setStatus({ type: 'error', message: error.message })
@@ -48,9 +51,21 @@ export default function Login() {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
-        <h2>Masuk</h2>
-        <p className="subtext">Masuk untuk mengelola form kamu</p>
+        <h2>Buat Akun</h2>
+        <p className="subtext">Buat akun baru untuk mulai menyusun form</p>
         <form className="stack" onSubmit={handleSubmit}>
+          <Input
+            label="Nama lengkap"
+            placeholder="Nama kamu"
+            value={name}
+            onChange={(event) => {
+              setName(event.target.value)
+              if (errors.name) setErrors(prev => ({ ...prev, name: '' }))
+            }}
+            error={errors.name}
+            disabled={loading}
+            required
+          />
           <Input
             label="Email"
             type="email"
@@ -69,6 +84,7 @@ export default function Login() {
               label="Password"
               type={showPassword ? 'text' : 'password'}
               placeholder="Minimal 8 karakter"
+              helper="Gunakan kombinasi huruf dan angka."
               value={password}
               onChange={(event) => {
                 setPassword(event.target.value)
@@ -105,18 +121,18 @@ export default function Login() {
           <Button type="submit" disabled={loading}>
             {loading ? (
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
-                <Spinner size="small" /> Logging in...
+                <Spinner size="small" /> Registering...
               </span>
-            ) : 'Login'}
+            ) : 'Daftar'}
           </Button>
           <div className="divider">atau</div>
           <Button variant="ghost" type="button" disabled={loading}>
-            Login with Google (mock)
+            Register with Google (mock)
           </Button>
         </form>
       </div>
       <p className="subtext" style={{ textAlign: 'center' }}>
-        Belum punya akun? <Link to="/register" className="link">Daftar</Link>
+        Sudah punya akun? <Link to="/login" className="link">Masuk</Link>
       </p>
     </div>
   )

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { getToken, clearToken } from "../lib/api.js";
+import { getToken, clearToken } from "../../lib/api.js";
 
 export default function Navbar() {
   const location = useLocation();

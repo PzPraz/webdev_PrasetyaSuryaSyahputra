@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import Button from '../components/Button.jsx'
-import Input from '../components/Input.jsx'
-import Spinner from '../components/Spinner.jsx'
-import Snackbar from '../components/Snackbar.jsx'
-import { createForm, getForms } from '../lib/api.js'
-import { validateTitle } from '../lib/validation.js'
+import Button from '../../components/ui/Button.jsx'
+import Input from '../../components/ui/Input.jsx'
+import Spinner from '../../components/ui/Spinner.jsx'
+import Snackbar from '../../components/ui/Snackbar.jsx'
+import { createForm, getForms } from '../../lib/api.js'
+import { validateTitle } from '../../lib/validation.js'
 
 export default function FormList() {
   const location = useLocation()
@@ -74,7 +74,6 @@ export default function FormList() {
       setForms((prev) => [created, ...prev])
       setDraft({ title: '', description: '', status: 'draft' })
       setTitleError('')
-      setStatus({ type: 'success', message: 'Form berhasil dibuat.' })
       setShowCreate(false)
     } catch (err) {
       setStatus({ type: 'error', message: err.message })
@@ -184,9 +183,14 @@ export default function FormList() {
 
       {!loading && forms.length === 0 && !error && (
         <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-          <img src="/empty.png" alt="empty" style={{ maxWidth: '280px', marginBottom: '1rem' }} />
+          <img src="/empty.png" alt="empty" style={{ width: '100%', maxWidth: '500px',}} />
           <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Belum ada form</p>
-          <p className="subtext">Klik "+ Form baru" untuk membuat form pertama kamu.</p>
+          <p className="subtext" style={{marginBottom: '0.75rem'}}>Klik "+ Form baru" untuk membuat form pertama kamu.</p>
+          {!showCreate &&
+            <Button onClick={() => setShowCreate((v) => !v)}>
+            + Buat form pertama
+            </Button>
+          }
         </div>
       )}
 

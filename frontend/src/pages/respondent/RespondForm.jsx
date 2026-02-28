@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getPublicForm, submitResponse } from "../lib/api.js";
-import Button from "../components/Button.jsx";
-import Spinner from "../components/Spinner.jsx";
-import Snackbar from "../components/Snackbar.jsx";
+import { getPublicForm, submitResponse } from "../../lib/api.js";
+import Button from "../../components/ui/Button.jsx";
+import Spinner from "../../components/ui/Spinner.jsx";
+import Snackbar from "../../components/ui/Snackbar.jsx";
 
 /* ── Interactive Star Rating ── */
 function StarRatingInput({ value, onChange }) {
@@ -191,7 +191,7 @@ export default function RespondForm() {
     return (
       <div className="respond-container">
         <div className="respond-error-card">
-          <img src="/permission-denied.png" alt="permission denied" style={{ maxWidth: '280px', marginBottom: '1rem' }} />
+          <img src="/permission-denied.png" alt="permission denied" style={{ maxWidth: '500px', width: '100%', marginBottom: '1rem' }} />
           <h2>Formulir Tidak Tersedia</h2>
           <p>{error}</p>
         </div>
@@ -223,21 +223,6 @@ export default function RespondForm() {
         <p className="respond-required-note"><span className="required-mark">*</span> Menandakan pertanyaan wajib diisi</p>
       </div>
 
-      {/* Respondent name (optional, first page only) */}
-      {currentPage === 0 && (
-        <div className="respond-question-card">
-          <label className="field">
-            <span className="field-label">Nama Anda (opsional)</span>
-            <input
-              type="text"
-              className="field-input"
-              placeholder="Masukkan nama Anda"
-              value={respondentName}
-              onChange={(e) => setRespondentName(e.target.value)}
-            />
-          </label>
-        </div>
-      )}
 
       {/* Questions */}
       {currentQuestions.map((q) => {

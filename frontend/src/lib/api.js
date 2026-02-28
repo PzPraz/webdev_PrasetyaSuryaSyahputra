@@ -112,6 +112,25 @@ export async function submitResponse(formId, data) {
 
   return response.json();
 }
+
+export async function getResponses(formId) {
+  const token = getToken();
+  if (!token) throw new Error("Sesi telah berakhir. Silakan login kembali.");
+
+  const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/responses`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
+
 export function storeToken(token) {
   localStorage.setItem("token", token);
 }
