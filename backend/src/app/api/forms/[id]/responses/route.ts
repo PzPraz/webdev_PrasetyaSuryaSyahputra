@@ -120,11 +120,33 @@ export async function POST(
     );
 
     for (const question of nonContentQuestions) {
+      const answer = answers[question.id];
+
       if (question.required) {
-        const answer = answers[question.id];
         if (!answer || (typeof answer === "string" && !answer.trim()) || (Array.isArray(answer) && answer.length === 0)) {
           return NextResponse.json(
             { message: `Pertanyaan "${question.title}" wajib dijawab.` },
+            { status: 400, headers: corsHeaders },
+          );
+        }
+      }
+
+      // Email format validation
+      if (question.type === "email" && answer && typeof answer === "string" && answer.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(answer.trim())) {
+          return NextResponse.json(
+            { message: `Format email tidak valid pada "${question.title}".` },
+            { status: 400, headers: corsHeaders },
+          );
+        }
+      }
+
+      // Number validation
+      if (question.type === "number_box" && answer && typeof answer === "string" && answer.trim()) {
+        if (isNaN(Number(answer))) {
+          return NextResponse.json(
+            { message: `Masukkan angka yang valid pada "${question.title}".` },
             { status: 400, headers: corsHeaders },
           );
         }

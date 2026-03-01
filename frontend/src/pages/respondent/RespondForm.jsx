@@ -120,10 +120,24 @@ export default function RespondForm() {
     const errors = {};
     for (const q of currentQuestions) {
       if (q.type === "text_block") continue;
+      const val = answers[q.id];
       if (q.required) {
-        const val = answers[q.id];
         if (!val || (typeof val === "string" && !val.trim()) || (Array.isArray(val) && val.length === 0)) {
           errors[q.id] = "Pertanyaan ini wajib dijawab.";
+          continue;
+        }
+      }
+      // Email format validation
+      if (q.type === "email" && val && typeof val === "string" && val.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(val.trim())) {
+          errors[q.id] = "Format email tidak valid.";
+        }
+      }
+      // Number validation
+      if (q.type === "number_box" && val && typeof val === "string" && val.trim()) {
+        if (isNaN(Number(val))) {
+          errors[q.id] = "Masukkan angka yang valid.";
         }
       }
     }
@@ -250,6 +264,28 @@ export default function RespondForm() {
                 type="text"
                 className="field-input"
                 placeholder="Jawaban Anda"
+                value={answers[q.id] || ""}
+                onChange={(e) => setAnswer(q.id, e.target.value)}
+              />
+            )}
+
+            {/* Email */}
+            {q.type === "email" && (
+              <input
+                type="email"
+                className="field-input"
+                placeholder="contoh@email.com"
+                value={answers[q.id] || ""}
+                onChange={(e) => setAnswer(q.id, e.target.value)}
+              />
+            )}
+
+            {/* Number box */}
+            {q.type === "number_box" && (
+              <input
+                type="number"
+                className="field-input"
+                placeholder="0"
                 value={answers[q.id] || ""}
                 onChange={(e) => setAnswer(q.id, e.target.value)}
               />

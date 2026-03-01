@@ -383,7 +383,7 @@ function buildChartData(question, allResponses) {
 
   const type = question.type;
 
-  if (type === "short_answer" || type === "long_answer") {
+  if (type === "short_answer" || type === "long_answer" || type === "email" || type === "number_box") {
     return {
       type: "text",
       values: answers.map((a) => a.value).filter(Boolean),

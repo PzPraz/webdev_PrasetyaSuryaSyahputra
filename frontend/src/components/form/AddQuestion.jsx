@@ -30,7 +30,7 @@ function StarRatingFormPreview() {
 
 const TYPES_WITH_OPTIONS = ["multiple_choice", "multiple_choice_dropdown"];
 const TYPES_WITHOUT_REQUIRED = ["page_break", "text_block"];
-const TYPES_WITHOUT_OPTIONS = ["short_answer", "long_answer", "page_break", "text_block", "linear_scale", "star_rating", "date_picker"];
+const TYPES_WITHOUT_OPTIONS = ["short_answer", "long_answer", "page_break", "text_block", "linear_scale", "star_rating", "date_picker", "email", "number_box"];
 
 export default function AddQuestion({
   onCancel,
@@ -140,6 +140,8 @@ export default function AddQuestion({
     linear_scale: "Skala Linier",
     star_rating: "Rating Bintang",
     date_picker: "Pemilih Tanggal",
+    email: "Email",
+    number_box: "Angka",
   }[questionData.type] || "Pertanyaan Baru";
 
 
@@ -301,6 +303,26 @@ export default function AddQuestion({
                   >
                     Rating Bintang
                   </button>
+                  <button
+                    type="button"
+                    className={`question-type-btn ${
+                      questionData.type === "email" ? "active" : ""
+                    }`}
+                    onClick={() => handleTypeChange("email")}
+                    disabled={disableTypeChange}
+                  >
+                    Email
+                  </button>
+                  <button
+                    type="button"
+                    className={`question-type-btn ${
+                      questionData.type === "number_box" ? "active" : ""
+                    }`}
+                    onClick={() => handleTypeChange("number_box")}
+                    disabled={disableTypeChange}
+                  >
+                    Angka
+                  </button>
                 </div>
               </div>
             )}
@@ -461,6 +483,38 @@ export default function AddQuestion({
             <div className="field">
               <label className="field-label">Preview</label>
               <StarRatingFormPreview />
+            </div>
+          )}
+
+          {questionData.type === "email" && (
+            <div className="field">
+              <label className="field-label">Preview</label>
+              <input
+                type="email"
+                className="field-input"
+                placeholder="contoh@email.com"
+                disabled
+                style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed", color: "#999" }}
+              />
+              <p className="field-hint" style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}>
+                Responden akan memasukkan alamat email.
+              </p>
+            </div>
+          )}
+
+          {questionData.type === "number_box" && (
+            <div className="field">
+              <label className="field-label">Preview</label>
+              <input
+                type="number"
+                className="field-input"
+                placeholder="0"
+                disabled
+                style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed", color: "#999" }}
+              />
+              <p className="field-hint" style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}>
+                Responden akan memasukkan angka.
+              </p>
             </div>
           )}
 

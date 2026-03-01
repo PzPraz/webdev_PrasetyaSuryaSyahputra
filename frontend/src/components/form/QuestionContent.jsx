@@ -131,6 +131,14 @@ export default function QuestionContent({ question }) {
       )}
 
       {question.type === "star_rating" && <StarRatingPreview />}
+
+      {question.type === "email" && (
+        <div className="answer-placeholder">contoh@email.com</div>
+      )}
+
+      {question.type === "number_box" && (
+        <div className="answer-placeholder">0</div>
+      )}
     </>
   );
 }
