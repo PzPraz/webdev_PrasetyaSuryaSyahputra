@@ -191,7 +191,7 @@ export default function RespondForm() {
     return (
       <div className="respond-container">
         <div className="respond-error-card">
-          <img src="/permission-denied.png" alt="permission denied" style={{ maxWidth: '500px', width: '100%', marginBottom: '1rem' }} />
+          <img src="/not-found.png" alt="form not found" style={{ maxWidth: '500px', width: '100%', marginBottom: '1rem' }} />
           <h2>Formulir Tidak Tersedia</h2>
           <p>{error}</p>
         </div>

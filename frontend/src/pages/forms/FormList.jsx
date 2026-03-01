@@ -158,7 +158,7 @@ export default function FormList() {
           <p className="subtext">Kelola seluruh form yang kamu buat</p>
         </div>
         <div className="action-row">
-          <Button onClick={() => setShowCreate((v) => !v)}>
+          <Button variant="canFloat" onClick={() => setShowCreate((v) => !v)}>
             {showCreate ? 'Tutup' : '+ Form baru'}
           </Button>
         </div>

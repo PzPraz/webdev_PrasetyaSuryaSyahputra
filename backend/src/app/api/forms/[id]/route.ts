@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { corsHeaders } from "@/lib/cors";
-import { getAuthUserId } from "@/lib/request";
+import { getAuthUserId, isValidObjectId } from "@/lib/request";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -12,6 +12,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  if (!isValidObjectId(id)) {
+    return NextResponse.json({ message: "Invalid form ID." }, { status: 400, headers: corsHeaders });
+  }
 
   const userId = getAuthUserId(_req);
   if (!userId) {
@@ -54,6 +58,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  if (!isValidObjectId(id)) {
+    return NextResponse.json({ message: "Invalid form ID." }, { status: 400, headers: corsHeaders });
+  }
+
   const userId = getAuthUserId(req);
   if (!userId) {
     return NextResponse.json(
@@ -132,6 +141,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  if (!isValidObjectId(id)) {
+    return NextResponse.json({ message: "Invalid form ID." }, { status: 400, headers: corsHeaders });
+  }
+
   const userId = getAuthUserId(req);
   if (!userId) {
     return NextResponse.json(

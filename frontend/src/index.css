@@ -487,94 +487,6 @@ p {
   border: 1px solid var(--line);
 }
 
-@media (max-width: 860px) {
-  .form-detail-layout {
-    flex-direction: column;
-    max-width: 100%;
-  }
-
-  .form-detail-main {
-    width: 100%;
-  }
-
-  .form-detail-sidebar {
-    width: 100%;
-    position: static;
-    flex-direction: column;
-  }
-
-  .sidebar-card {
-    min-width: 0;
-  }
-}
-
-@media (max-width: 600px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filter-search,
-  .filter-select {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .card {
-    padding: 1rem;
-  }
-
-  .form-header-body {
-    padding: 1rem;
-  }
-
-  .sidebar-link-box {
-    flex-direction: column;
-  }
-
-  .sidebar-link-input {
-    font-size: 0.75rem;
-  }
-
-  .snackbar {
-    min-width: auto;
-    max-width: calc(100vw - 2rem);
-    left: 1rem;
-    right: 1rem;
-    transform: none;
-  }
-
-  /* Form stat cards responsive */
-  .form-stat {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .form-stat-box {
-    min-width: 0;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1rem;
-  }
-
-  .stat-value {
-    font-size: 1.25rem;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-  }
-
-  .page {
-    width: 100%;
-  }
-}
-
 .page-hero {
   max-width: 600px;
   display: grid;
@@ -730,7 +642,7 @@ p {
 .grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
 .form {
@@ -1918,62 +1830,6 @@ p {
 
 /* ─── Responsive ─── */
 
-@media (max-width: 720px) {
-  .app-main {
-    padding: 1.5rem 0.75rem 3rem;
-  }
-
-  .nav {
-    padding: 0 0.75rem;
-  }
-
-  .nav-inner {
-    gap: 0.75rem;
-  }
-
-  .nav-sub {
-    display: none;
-  }
-
-  .nav-links {
-    gap: 0;
-  }
-
-  .nav-links a {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.8rem;
-  }
-
-  .page-head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .question-type-group {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .action-row {
-    flex-wrap: wrap;
-  }
-
-  .form-detail-layout .card {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: stretch !important;
-  }
-
-  .add-menu-wrapper {
-    align-self: flex-start;
-  }
-
-  .question-card-body,
-  .page-break-body {
-    padding: 0.75rem;
-  }
-}
-
 /* ── Snackbar ── */
 .snackbar {
   position: fixed;
@@ -2342,4 +2198,171 @@ p {
 
 .preview-banner-close:hover {
   background: rgba(102, 77, 3, 0.1);
+}
+
+@media (max-width: 860px) {
+  .form-detail-layout {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .form-detail-main {
+    width: 100%;
+  }
+
+  .form-detail-sidebar {
+    width: 100%;
+    position: static;
+    flex-direction: column;
+  }
+
+  .sidebar-card {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-main {
+    padding: 1.5rem 0.75rem 3rem;
+  }
+
+  .nav {
+    padding: 0 0.75rem;
+  }
+
+  .nav-inner {
+    gap: 0.75rem;
+  }
+
+  .nav-sub {
+    display: none;
+  }
+
+  .nav-links {
+    gap: 0;
+  }
+
+  .nav-links a {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .question-type-group {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .action-row {
+    flex-wrap: wrap;
+  }
+
+  .form-detail-layout .card {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch !important;
+  }
+
+  .add-menu-wrapper {
+    align-self: flex-start;
+  }
+
+  .question-card-body,
+  .page-break-body {
+    padding: 0.75rem;
+  }
+
+  .add-form-btn {
+    position: fixed;   /* Membuat tombol menempel pada layar (viewport) */
+    bottom: 24px;      /* Memberikan ruang agar tidak menempel pas di tepi bawah */
+    right: 24px;       /* Memberikan ruang agar tidak menempel pas di tepi kanan */
+    z-index: 99;       /* Memastikan tombol selalu melayang di atas kartu form */
+    
+    /* Tambahan visual agar tombol lebih menonjol (Opsional) */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .form-header-body {
+    padding: 1rem;
+  }
+
+  .sidebar-link-box {
+    flex-direction: column;
+  }
+
+  .sidebar-link-input {
+    font-size: 0.75rem;
+  }
+
+  .snackbar {
+    min-width: auto;
+    max-width: calc(100vw - 2rem);
+    left: 1rem;
+    right: 1rem;
+    transform: none;
+  }
+
+  /* Form stat cards — compact horizontal row */
+  .form-stat {
+    gap: 0.5rem;
+  }
+
+  .form-stat-box {
+    min-width: 0;
+    flex: 1;
+    padding: 0.5rem 0.65rem;
+    border-radius: 8px;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+
+  /* Filter bar — inline row, compact */
+  .filter-bar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-search {
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .page {
+    width: 100%;
+  }
 }

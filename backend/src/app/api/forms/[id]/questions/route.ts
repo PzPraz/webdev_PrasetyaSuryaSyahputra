@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 import { corsHeaders } from "@/lib/cors";
+import { isValidObjectId } from "@/lib/request";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -19,9 +20,9 @@ export async function POST(
     }
 
     const { id: formId } = await params;
-    if (!formId) {
+    if (!formId || !isValidObjectId(formId)) {
       return NextResponse.json(
-        { message: "Form id is required" },
+        { message: "Invalid form ID." },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -111,9 +112,9 @@ export async function GET(
     }
 
     const { id: formId } = await params;
-    if (!formId) {
+    if (!formId || !isValidObjectId(formId)) {
       return NextResponse.json(
-        { message: "Form id is required" },
+        { message: "Invalid form ID." },
         { status: 400, headers: corsHeaders }
       );
     }

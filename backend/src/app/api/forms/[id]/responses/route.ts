@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { corsHeaders } from "@/lib/cors";
-import { getAuthUserId } from "@/lib/request";
+import { getAuthUserId, isValidObjectId } from "@/lib/request";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -13,6 +13,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: formId } = await params;
+
+  if (!isValidObjectId(formId)) {
+    return NextResponse.json({ message: "Invalid form ID." }, { status: 400, headers: corsHeaders });
+  }
+
   const userId = getAuthUserId(req);
 
   if (!userId) {
@@ -72,6 +77,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: formId } = await params;
+
+  if (!isValidObjectId(formId)) {
+    return NextResponse.json({ message: "Invalid form ID." }, { status: 400, headers: corsHeaders });
+  }
 
   try {
     const form = await prisma.form.findUnique({

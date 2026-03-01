@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { corsHeaders } from "@/lib/cors";
-import { getAuthUserId } from "@/lib/request";
+import { getAuthUserId, isValidObjectId } from "@/lib/request";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -191,6 +191,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; questionId: string }> },
 ) {
   const { id, questionId } = await params;
+
+  if (!isValidObjectId(id) || !isValidObjectId(questionId)) {
+    return NextResponse.json({ message: "Invalid ID." }, { status: 400, headers: corsHeaders });
+  }
+
   const userId = getAuthUserId(req);
 
   if (!userId) {

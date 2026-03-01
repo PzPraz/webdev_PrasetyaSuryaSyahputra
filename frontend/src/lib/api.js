@@ -53,7 +53,7 @@ async function handleErrorResponse(response) {
   } else if (response.status === 403) {
     errorMessage = 'Anda tidak memiliki akses untuk operasi ini.';
   } else if (response.status === 404) {
-    errorMessage = 'Data tidak ditemukdan.';
+    errorMessage = 'Data tidak ditemukan.';
   } else if (response.status === 500) {
     errorMessage = 'Terjadi kesalahan server. Mohon coba lagi.';
   }

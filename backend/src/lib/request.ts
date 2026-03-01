@@ -1,6 +1,12 @@
 import { NextRequest } from "next/server";
 import { verifyToken } from "./auth";
 
+const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+
+export function isValidObjectId(id: string): boolean {
+  return objectIdRegex.test(id);
+}
+
 export function getBearerToken(req: NextRequest): string | null {
   const auth = req.headers.get("authorization");
   if (!auth) return null;
