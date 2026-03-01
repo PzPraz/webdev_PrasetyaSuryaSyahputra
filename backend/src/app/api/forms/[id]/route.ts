@@ -11,7 +11,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;6
+  const { id } = await params;
 
   const userId = getAuthUserId(_req);
   if (!userId) {
@@ -118,7 +118,8 @@ export async function PATCH(
       { ...form, responseCount: form._count.responses, _count: undefined },
       { headers: corsHeaders },
     );
-  } catch {
+  } catch (error) {
+    console.error("Form PATCH error:", error);
     return NextResponse.json(
       { message: "Unexpected error." },
       { status: 500, headers: corsHeaders }
@@ -160,8 +161,9 @@ export async function DELETE(
     }
 
     await prisma.form.delete({ where: { id } });
-    return NextResponse.json({ message: "Delete successfull", status: 200, headers: corsHeaders });
-  } catch {
+    return NextResponse.json({ message: "Deleted successfully." }, { status: 200, headers: corsHeaders });
+  } catch (error) {
+    console.error("Form DELETE error:", error);
     return NextResponse.json(
       { message: "Unexpected error." },
       { status: 500, headers: corsHeaders }

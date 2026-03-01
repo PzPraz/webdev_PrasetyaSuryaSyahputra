@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { corsHeaders } from "@/lib/cors";
 import { getAuthUserId } from "@/lib/request";
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
 // PATCH /api/forms/[id]/questions/reorder — bulk update question order
 export async function PATCH(
   req: NextRequest,
@@ -49,15 +53,13 @@ export async function PATCH(
       );
     }
 
-    // Update each question's order in a transaction
-    await prisma.$transaction(
-      orderedIds.map((questionId: string, index: number) =>
-        prisma.question.update({
-          where: { id: questionId },
-          data: { order: index },
-        }),
-      ),
-    );
+    // Update each question's order sequentially
+    for (let index = 0; index < orderedIds.length; index++) {
+      await prisma.question.update({
+        where: { id: orderedIds[index] },
+        data: { order: index },
+      });
+    }
 
     // Return updated questions
     const questions = await prisma.question.findMany({

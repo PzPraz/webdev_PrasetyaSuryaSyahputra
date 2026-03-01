@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import { corsHeaders } from "@/lib/cors";
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
 
 // POST /api/forms/[id]/questions - Create question
 export async function POST(
@@ -10,14 +15,14 @@ export async function POST(
   try {
     const user = await getUserFromRequest(request);
     if (!user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
     const { id: formId } = await params;
     if (!formId) {
       return NextResponse.json(
         { message: "Form id is required" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
     const body = await request.json();
@@ -30,13 +35,13 @@ export async function POST(
     });
 
     if (!form) {
-      return NextResponse.json({ message: "Form not found" }, { status: 404 });
+      return NextResponse.json({ message: "Form not found" }, { status: 404, headers: corsHeaders });
     }
 
     if (form.ownerId !== user.userId) {
       return NextResponse.json(
         { message: "Not authorized to add questions to this form" },
-        { status: 403 }
+        { status: 403, headers: corsHeaders }
       );
     }
 
@@ -45,7 +50,7 @@ export async function POST(
     if (responseCount > 0) {
       return NextResponse.json(
         { message: "Tidak dapat menambah pertanyaan karena form sudah memiliki respons." },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -65,7 +70,7 @@ export async function POST(
     if (!validTypes.includes(type)) {
       return NextResponse.json(
         { message: "Invalid question type" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -84,12 +89,12 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(question, { status: 201 });
+    return NextResponse.json(question, { status: 201, headers: corsHeaders });
   } catch (error) {
     console.error("Create question error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
@@ -102,14 +107,14 @@ export async function GET(
   try {
     const user = await getUserFromRequest(request);
     if (!user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
     const { id: formId } = await params;
     if (!formId) {
       return NextResponse.json(
         { message: "Form id is required" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -120,13 +125,13 @@ export async function GET(
     });
 
     if (!form) {
-      return NextResponse.json({ message: "Form not found" }, { status: 404 });
+      return NextResponse.json({ message: "Form not found" }, { status: 404, headers: corsHeaders });
     }
 
     if (form.ownerId !== user.userId) {
       return NextResponse.json(
         { message: "Not authorized to view this form" },
-        { status: 403 }
+        { status: 403, headers: corsHeaders }
       );
     }
 
@@ -136,12 +141,12 @@ export async function GET(
       orderBy: { order: "asc" },
     });
 
-    return NextResponse.json(questions);
+    return NextResponse.json(questions, { headers: corsHeaders });
   } catch (error) {
     console.error("Get questions error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

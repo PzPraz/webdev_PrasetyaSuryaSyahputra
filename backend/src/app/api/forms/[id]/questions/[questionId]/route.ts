@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { corsHeaders } from "@/lib/cors";
 import { getAuthUserId } from "@/lib/request";
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; questionId: string }> },

@@ -1,12 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// prisma/schema.prisma
+
+datasource db {
+  provider = "mongodb"
+}
 
 generator client {
   provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
 }
 
 enum FormStatus {
@@ -28,7 +27,7 @@ enum QuestionType {
 }
 
 model User {
-  id           String   @id @default(cuid())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   email        String   @unique
   passwordHash String
   name         String?
@@ -38,56 +37,49 @@ model User {
 }
 
 model Form {
-  id          String       @id @default(cuid())
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
-  status      FormStatus   @default(draft)
-  ownerId     String
-  owner       User         @relation(fields: [ownerId], references: [id])
+  status      FormStatus @default(draft)
+  ownerId     String     @db.ObjectId
+  owner       User       @relation(fields: [ownerId], references: [id])
   questions   Question[]
   responses   Response[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Question {
-  id                String       @id @default(cuid())
-  formId            String
-  form              Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
-  type              QuestionType
-  title             String
-  required          Boolean      @default(false)
-  order             Int
-  options           String[]     @default([])
-  allowMultiple     Boolean      @default(false)
-  labelMin          String?
-  labelMax          String?
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-
-  @@index([formId])
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  formId        String       @db.ObjectId
+  form          Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
+  type          QuestionType
+  title         String
+  required      Boolean      @default(false)
+  order         Int
+  options       String[]     @default([])
+  allowMultiple Boolean      @default(false)
+  labelMin      String?
+  labelMax      String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Response {
-  id            String   @id @default(cuid())
-  formId        String
-  form          Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  formId         String   @db.ObjectId
+  form           Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
   respondentName String?
-  answers       Answer[]
-  submittedAt   DateTime @default(now())
-
-  @@index([formId])
+  answers        Answer[]
+  submittedAt    DateTime @default(now())
 }
 
 model Answer {
-  id          String   @id @default(cuid())
-  responseId  String
-  response    Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
-  questionId  String
-  value       String   @default("")
-  values      String[] @default([])
-  createdAt   DateTime @default(now())
-
-  @@index([responseId])
-  @@index([questionId])
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  responseId String   @db.ObjectId
+  response   Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  questionId String   @db.ObjectId
+  value      String   @default("")
+  values     String[] @default([])
+  createdAt  DateTime @default(now())
 }

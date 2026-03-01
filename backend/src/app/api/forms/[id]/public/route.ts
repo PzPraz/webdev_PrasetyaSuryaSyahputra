@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { corsHeaders } from "@/lib/cors";
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
 // GET /api/forms/[id]/public — get published form with questions (no auth)
 export async function GET(
   _req: NextRequest,
