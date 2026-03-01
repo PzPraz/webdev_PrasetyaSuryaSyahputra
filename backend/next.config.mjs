@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ["bcryptjs", "jsonwebtoken"],
+  serverExternalPackages: ["bcryptjs", "jsonwebtoken", "@prisma/client", ".prisma/client"],
   async headers() {
     return [
       {
