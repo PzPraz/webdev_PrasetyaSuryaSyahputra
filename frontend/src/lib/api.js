@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api`;
+const _raw = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api`;
+const API_BASE = _raw.endsWith("/api") ? _raw : `${_raw.replace(/\/+$/, "")}/api`;
 
 // Helper function to handle fetch with timeout and better error handling
 async function fetchWithTimeout(url, options = {}, timeout = 10000) {
