@@ -1,7 +1,6 @@
 const envUrl = import.meta.env.VITE_API_URL;
 const API_BASE = envUrl ? `${envUrl}/api` : "http://localhost:3001/api";
 
-alert("API URL saat ini: " + (API_BASE || "Masih Localhost!"));
 // Helper function to handle fetch with timeout and better error handling
 async function fetchWithTimeout(url, options = {}, timeout = 10000) {
   const controller = new AbortController();
@@ -54,7 +53,7 @@ async function handleErrorResponse(response) {
   } else if (response.status === 403) {
     errorMessage = 'Anda tidak memiliki akses untuk operasi ini.';
   } else if (response.status === 404) {
-    errorMessage = 'Data tidak ditemukan.';
+    errorMessage = 'Data tidak ditemukdan.';
   } else if (response.status === 500) {
     errorMessage = 'Terjadi kesalahan server. Mohon coba lagi.';
   }
