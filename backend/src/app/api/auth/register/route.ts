@@ -21,6 +21,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (password.length < 8) {
+      return NextResponse.json(
+        { message: "Password minimal 8 karakter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    if (!hasLetter || !hasNumber) {
+      return NextResponse.json(
+        { message: "Password harus kombinasi huruf dan angka." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json(

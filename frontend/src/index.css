@@ -547,6 +547,32 @@ p {
     right: 1rem;
     transform: none;
   }
+
+  /* Form stat cards responsive */
+  .form-stat {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .form-stat-box {
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .page {
+    width: 100%;
+  }
 }
 
 .page-hero {

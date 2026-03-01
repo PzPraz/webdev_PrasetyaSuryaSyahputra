@@ -22,6 +22,12 @@ export function validatePassword(password) {
   if (password.length < 8) {
     return { valid: false, error: 'Password minimal 8 karakter' }
   }
+
+  const hasLetter = /[a-zA-Z]/.test(password)
+  const hasNumber = /[0-9]/.test(password)
+  if (!hasLetter || !hasNumber) {
+    return { valid: false, error: 'Password harus kombinasi huruf dan angka' }
+  }
   
   return { valid: true, error: null }
 }
