@@ -1,5 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const envUrl = import.meta.env.VITE_API_URL;
+const API_BASE = envUrl ? `${envUrl}/api` : "http://localhost:3001/api";
 
+alert("API URL saat ini: " + (API_BASE || "Masih Localhost!"));
 // Helper function to handle fetch with timeout and better error handling
 async function fetchWithTimeout(url, options = {}, timeout = 10000) {
   const controller = new AbortController();
