@@ -25,6 +25,9 @@ export default function Home() {
               </Link>
             </>
           )}
+          <Link to="/explore">
+            <button className="btn btn-ghost">Jelajahi Form Aktif</button>
+          </Link>
         </div>
       </div>
 

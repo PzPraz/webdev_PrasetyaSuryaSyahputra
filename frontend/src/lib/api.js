@@ -90,6 +90,21 @@ export async function loginUser({ email, password }) {
 }
 // ===== Public (no auth) =====
 
+export async function getPublicForms({ search = '', sort = '' } = {}) {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (sort) params.set('sort', sort);
+  const qs = params.toString();
+
+  const response = await fetchWithTimeout(`${API_BASE}/explore${qs ? `?${qs}` : ''}`);
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
+
 export async function getPublicForm(formId) {
   const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/public`);
 

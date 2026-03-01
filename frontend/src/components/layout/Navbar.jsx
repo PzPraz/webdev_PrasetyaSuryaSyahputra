@@ -24,6 +24,12 @@ export default function Navbar() {
         </Link>
 
         <div className="nav-links">
+          <Link
+            to="/explore"
+            className={location.pathname === "/explore" ? "active" : ""}
+          >
+            Jelajahi
+          </Link>
           {isAuthenticated ? (
             <>
               <button

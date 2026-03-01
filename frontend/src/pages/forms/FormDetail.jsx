@@ -18,6 +18,7 @@ import Button from "../../components/ui/Button.jsx";
 import Input from "../../components/ui/Input.jsx";
 import AddQuestion from "../../components/form/AddQuestion.jsx";
 import Snackbar from "../../components/ui/Snackbar.jsx";
+import Spinner from "../../components/ui/Spinner.jsx";
 import Modal from "../../components/ui/Modal.jsx";
 import SortableQuestionCard from "../../components/form/SortableQuestionCard.jsx";
 import QuestionContent from "../../components/form/QuestionContent.jsx";
@@ -496,9 +497,10 @@ export default function FormDetail() {
 
   if (loading) {
     return (
-      <section className="page">
-        <p className="subtext">Loading form...</p>
-      </section>
+      <div className="loading-container">
+        <Spinner size="large" />
+        <span>Loading form...</span>
+      </div>
     );
   }
 

@@ -8,6 +8,7 @@ import FormList from './pages/forms/FormList.jsx'
 import FormDetail from './pages/forms/FormDetail.jsx'
 import RespondForm from './pages/respondent/RespondForm.jsx'
 import SubmitSuccess from './pages/respondent/SubmitSuccess.jsx'
+import ExploreForms from './pages/forms/ExploreForms.jsx'
 import { getToken } from './lib/api.js'
 
 // Protected Route Component
@@ -32,6 +33,7 @@ function App() {
             <Route path="/" element={<HomeOrForms />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/explore" element={<ExploreForms />} />
             <Route
               path="/forms"
               element={
